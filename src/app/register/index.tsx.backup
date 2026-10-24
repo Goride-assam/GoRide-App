@@ -1,0 +1,393 @@
+import React, { useState } from "react";
+import {
+  SafeAreaView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
+
+import { router } from "expo-router";
+import { supabase } from "../../config/supabase";
+
+export default function RegisterScreen() {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const registerUser = async () => {
+    if (
+      !name.trim() ||
+      !phone.trim() ||
+      !email.trim() ||
+      !password.trim()
+    ) {
+      Alert.alert(
+        "Missing Information",
+        "Please fill all details."
+      );
+      return;
+    }
+
+    if (password.trim().length < 6) {
+      Alert.alert(
+        "Weak Password",
+        "Password must be at least 6 characters."
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password: password.trim(),
+        options: {
+          data: {
+            name: name.trim(),
+            phone: phone.trim(),
+            role: "Customer",
+          },
+        },
+      });
+
+      if (error) {
+        console.log("SUPABASE REGISTER ERROR:", error);
+
+        Alert.alert(
+          "Registration Error",
+          error.message
+        );
+        return;
+      }
+
+      console.log("SUPABASE SIGNUP SUCCESS:", data.user?.id);
+
+      Alert.alert(
+        "Account Created ✅",
+        "Please check your email and confirm your account before logging in.",
+        [
+          {
+            text: "OK",
+            onPress: () => router.replace("/login"),
+          },
+        ]
+      );
+    } catch (error) {
+      console.log("REGISTER ERROR:", error);
+
+      Alert.alert(
+        "Registration Error",
+        "Could not create account. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={
+          Platform.OS === "ios"
+            ? "padding"
+            : undefined
+        }
+      >
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.logoCircle}>
+            <Text style={styles.logoIcon}>🚲</Text>
+          </View>
+
+          <Text style={styles.logo}>
+            GoRide
+          </Text>
+
+          <Text style={styles.title}>
+            Create Your Account
+          </Text>
+
+          <Text style={styles.subtitle}>
+            Join GoRide today 🚕
+          </Text>
+
+          <View style={styles.card}>
+            <Text style={styles.label}>
+              Full Name
+            </Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your full name"
+              placeholderTextColor="#999"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              editable={!loading}
+            />
+
+            <Text style={styles.label}>
+              Phone Number
+            </Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Enter phone number"
+              placeholderTextColor="#999"
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+              editable={!loading}
+            />
+
+            <Text style={styles.label}>
+              Email Address
+            </Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              placeholderTextColor="#999"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoCorrect={false}
+              editable={!loading}
+            />
+
+            <Text style={styles.label}>
+              Password
+            </Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Create a password"
+              placeholderTextColor="#999"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!loading}
+            />
+
+            <View style={styles.accountType}>
+              <Text style={styles.accountIcon}>
+                👤
+              </Text>
+
+              <View>
+                <Text style={styles.accountTitle}>
+                  Customer Account
+                </Text>
+
+                <Text style={styles.accountText}>
+                  Book and manage your GoRide rides.
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.button,
+                loading && styles.disabledButton,
+              ]}
+              onPress={registerUser}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading
+                  ? "CREATING ACCOUNT..."
+                  : "CREATE ACCOUNT"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.loginLink}
+            onPress={() => router.push("/login")}
+            disabled={loading}
+          >
+            <Text style={styles.loginText}>
+              Already have an account?
+            </Text>
+
+            <Text style={styles.loginBold}>
+              Login
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.footer}>
+            GoRide • Safe • Simple • Reliable
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFD400",
+  },
+
+  flex: {
+    flex: 1,
+  },
+
+  content: {
+    flexGrow: 1,
+    padding: 20,
+    paddingBottom: 35,
+  },
+
+  logoCircle: {
+    width: 65,
+    height: 65,
+    borderRadius: 33,
+    backgroundColor: "#fff",
+    alignSelf: "center",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+  },
+
+  logoIcon: {
+    fontSize: 34,
+  },
+
+  logo: {
+    fontSize: 34,
+    fontWeight: "900",
+    color: "#111",
+    textAlign: "center",
+    marginTop: 8,
+  },
+
+  title: {
+    fontSize: 23,
+    fontWeight: "800",
+    color: "#111",
+    textAlign: "center",
+    marginTop: 5,
+  },
+
+  subtitle: {
+    fontSize: 14,
+    color: "#444",
+    textAlign: "center",
+    marginTop: 4,
+    marginBottom: 18,
+  },
+
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+    elevation: 6,
+  },
+
+  label: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 7,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    backgroundColor: "#fafafa",
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    borderRadius: 12,
+    marginBottom: 14,
+    fontSize: 16,
+    color: "#111",
+  },
+
+  accountType: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF8CC",
+    borderWidth: 1,
+    borderColor: "#FFD400",
+    borderRadius: 12,
+    padding: 13,
+    marginBottom: 18,
+  },
+
+  accountIcon: {
+    fontSize: 28,
+    marginRight: 12,
+  },
+
+  accountTitle: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#111",
+  },
+
+  accountText: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 3,
+  },
+
+  button: {
+    backgroundColor: "#111",
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  disabledButton: {
+    opacity: 0.5,
+  },
+
+  buttonText: {
+    color: "#FFD400",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+
+  loginLink: {
+    alignItems: "center",
+    marginTop: 20,
+  },
+
+  loginText: {
+    color: "#333",
+    fontSize: 14,
+  },
+
+  loginBold: {
+    color: "#111",
+    fontSize: 16,
+    fontWeight: "900",
+    marginTop: 5,
+    textDecorationLine: "underline",
+  },
+
+  footer: {
+    textAlign: "center",
+    color: "#555",
+    fontSize: 12,
+    marginTop: 22,
+  },
+});

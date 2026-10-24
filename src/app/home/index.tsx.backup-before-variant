@@ -1,0 +1,397 @@
+import React from "react";
+import {
+  SafeAreaView,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
+import { router } from "expo-router";
+
+export default function HomeScreen() {
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* HEADER */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.logo}>GoRide</Text>
+
+            <Text style={styles.tagline}>
+              Your ride, your way 🚲
+            </Text>
+          </View>
+
+          <View style={styles.logoCircle}>
+            <Text style={styles.logoIcon}>🚲</Text>
+          </View>
+        </View>
+
+        {/* CUSTOMER BOOK RIDE */}
+        <View style={styles.heroCard}>
+          <Text style={styles.heroTitle}>
+            Where do you want to go?
+          </Text>
+
+          <Text style={styles.heroText}>
+            Book a quick and reliable ride with GoRide.
+          </Text>
+
+          <TouchableOpacity
+            style={styles.bookButton}
+            onPress={() => router.push("/ride")}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.bookButtonText}>
+              🚕 BOOK A RIDE
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* QUICK ACCESS */}
+        <Text style={styles.sectionTitle}>
+          Customer
+        </Text>
+
+        <View style={styles.grid}>
+          {/* RIDE STATUS */}
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => router.push("/status")}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.cardIcon}>📍</Text>
+
+            <Text style={styles.cardTitle}>
+              Ride Status
+            </Text>
+
+            <Text style={styles.cardText}>
+              Track your current ride
+            </Text>
+          </TouchableOpacity>
+
+          {/* RIDE HISTORY */}
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => router.push("/history")}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.cardIcon}>🕘</Text>
+
+            <Text style={styles.cardTitle}>
+              Ride History
+            </Text>
+
+            <Text style={styles.cardText}>
+              View your past rides
+            </Text>
+          </TouchableOpacity>
+
+          {/* PROFILE */}
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => router.push("/profile")}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.cardIcon}>👤</Text>
+
+            <Text style={styles.cardTitle}>
+              My Profile
+            </Text>
+
+            <Text style={styles.cardText}>
+              Manage your account
+            </Text>
+          </TouchableOpacity>
+
+          {/* TRACK RIDE */}
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => router.push("/track-ride")}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.cardIcon}>🗺️</Text>
+
+            <Text style={styles.cardTitle}>
+              Track Ride
+            </Text>
+
+            <Text style={styles.cardText}>
+              View driver location
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* DRIVER ENTRY */}
+        <Text style={styles.sectionTitle}>
+          Driver
+        </Text>
+
+        <TouchableOpacity
+          style={styles.driverCard}
+          onPress={() => router.push("/driver")}
+          activeOpacity={0.8}
+        >
+          <View style={styles.driverIconBox}>
+            <Text style={styles.driverIcon}>
+              🚕
+            </Text>
+          </View>
+
+          <View style={styles.driverInfo}>
+            <Text style={styles.driverTitle}>
+              Driver App
+            </Text>
+
+            <Text style={styles.driverText}>
+              Accept rides and manage driver location
+            </Text>
+          </View>
+
+          <Text style={styles.arrow}>
+            ›
+          </Text>
+        </TouchableOpacity>
+
+        {/* DRIVER LIVE MAP */}
+        <TouchableOpacity
+          style={styles.driverMapButton}
+          onPress={() => router.push("/driver/map")}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.driverMapText}>
+            📍 DRIVER LIVE LOCATION
+          </Text>
+
+          <Text style={styles.driverMapSubtext}>
+            Open GPS map and live location
+          </Text>
+        </TouchableOpacity>
+
+        {/* FOOTER */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            GoRide • Safe • Simple • Reliable
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFD400",
+  },
+
+  container: {
+    flex: 1,
+    backgroundColor: "#f7f7f7",
+  },
+
+  content: {
+    paddingBottom: 35,
+  },
+
+  header: {
+    backgroundColor: "#FFD400",
+    paddingHorizontal: 22,
+    paddingTop: 25,
+    paddingBottom: 30,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  logo: {
+    fontSize: 34,
+    fontWeight: "900",
+    color: "#111",
+  },
+
+  tagline: {
+    fontSize: 15,
+    color: "#333",
+    marginTop: 3,
+  },
+
+  logoCircle: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  logoIcon: {
+    fontSize: 30,
+  },
+
+  heroCard: {
+    backgroundColor: "#fff",
+    marginHorizontal: 18,
+    marginTop: -8,
+    borderRadius: 20,
+    padding: 22,
+    elevation: 5,
+  },
+
+  heroTitle: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#111",
+  },
+
+  heroText: {
+    fontSize: 15,
+    color: "#666",
+    marginTop: 7,
+    lineHeight: 21,
+  },
+
+  bookButton: {
+    backgroundColor: "#FFD400",
+    paddingVertical: 17,
+    borderRadius: 13,
+    alignItems: "center",
+    marginTop: 18,
+  },
+
+  bookButtonText: {
+    fontSize: 17,
+    fontWeight: "900",
+    color: "#111",
+  },
+
+  sectionTitle: {
+    fontSize: 21,
+    fontWeight: "800",
+    color: "#111",
+    marginHorizontal: 20,
+    marginTop: 25,
+    marginBottom: 13,
+  },
+
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 12,
+  },
+
+  card: {
+    width: "46%",
+    marginHorizontal: "2%",
+    backgroundColor: "#fff",
+    borderRadius: 17,
+    padding: 17,
+    marginBottom: 14,
+    elevation: 3,
+    minHeight: 135,
+  },
+
+  cardIcon: {
+    fontSize: 29,
+    marginBottom: 9,
+  },
+
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#111",
+  },
+
+  cardText: {
+    fontSize: 13,
+    color: "#666",
+    marginTop: 6,
+    lineHeight: 18,
+  },
+
+  driverCard: {
+    marginHorizontal: 18,
+    backgroundColor: "#111",
+    borderRadius: 18,
+    padding: 17,
+    flexDirection: "row",
+    alignItems: "center",
+    elevation: 5,
+  },
+
+  driverIconBox: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: "#FFD400",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  driverIcon: {
+    fontSize: 28,
+  },
+
+  driverInfo: {
+    flex: 1,
+    marginLeft: 14,
+  },
+
+  driverTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#fff",
+  },
+
+  driverText: {
+    fontSize: 13,
+    color: "#ddd",
+    marginTop: 4,
+    lineHeight: 18,
+  },
+
+  arrow: {
+    fontSize: 34,
+    color: "#FFD400",
+    fontWeight: "300",
+    marginLeft: 8,
+  },
+
+  driverMapButton: {
+    marginHorizontal: 18,
+    marginTop: 12,
+    backgroundColor: "#FFD400",
+    borderRadius: 16,
+    paddingVertical: 17,
+    alignItems: "center",
+    elevation: 3,
+  },
+
+  driverMapText: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#111",
+  },
+
+  driverMapSubtext: {
+    fontSize: 13,
+    color: "#333",
+    marginTop: 5,
+  },
+
+  footer: {
+    alignItems: "center",
+    marginTop: 28,
+  },
+
+  footerText: {
+    fontSize: 13,
+    color: "#777",
+  },
+});

@@ -1,0 +1,54 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+export const driverData = {
+  name: "Raj Kumar",
+  phone: "9876543210",
+  vehicle: "Swift Dzire",
+  vehicleNo: "AS01AB1234",
+  rating: "4.8 ⭐",
+};
+
+export let driverOnline = false;
+
+export function setDriverOnline(status: boolean) {
+  driverOnline = status;
+}
+
+export async function loadRegisteredDriver() {
+  try {
+    const saved = await AsyncStorage.getItem(
+      "driverRegistration"
+    );
+
+    if (!saved) {
+      return;
+    }
+
+    const registeredDriver = JSON.parse(saved);
+
+    if (registeredDriver?.name) {
+      driverData.name = registeredDriver.name;
+    }
+
+    if (registeredDriver?.phone) {
+      driverData.phone = registeredDriver.phone;
+    }
+
+    if (registeredDriver?.vehicle) {
+      driverData.vehicle = registeredDriver.vehicle;
+    }
+
+    if (registeredDriver?.vehicleNo) {
+      driverData.vehicleNo = registeredDriver.vehicleNo;
+    }
+
+    if (registeredDriver?.rating) {
+      driverData.rating = registeredDriver.rating;
+    }
+  } catch (error) {
+    console.log(
+      "DRIVER DATA LOAD ERROR:",
+      error
+    );
+  }
+}

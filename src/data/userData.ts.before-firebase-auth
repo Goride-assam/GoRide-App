@@ -1,0 +1,320 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "../config/supabase";
+
+export type UserRole = "Customer" | "Driver" | "";
+
+export type UserData = {
+  id?: string;
+  name: string;
+  phone: string;
+  email: string;
+  password: string;
+  role: UserRole;
+};
+
+export let currentUser: UserData = {
+  id: "",
+  name: "",
+  phone: "",
+  email: "",
+  password: "",
+  role: "",
+};
+
+/**
+ * Save customer profile locally.
+ *
+ * Password is kept only for backward compatibility with the
+ * existing local data structure. Supabase Auth is now responsible
+ * for real authentication and passwords.
+ */
+export async function saveUser(
+  name: string,
+  phone: string,
+  email: string,
+  password: string,
+  role: string,
+  id: string = ""
+) {
+  currentUser = {
+    id: id.trim(),
+    name: name.trim(),
+    phone: phone.trim(),
+    email: email.trim().toLowerCase(),
+    password: password.trim(),
+    role: role.trim() as UserRole,
+  };
+
+  await AsyncStorage.setItem(
+    "user",
+    JSON.stringify(currentUser)
+  );
+
+  console.log("SAVED USER:", currentUser);
+
+  return currentUser;
+}
+
+/**
+ * Load the locally saved GoRide user.
+ */
+export async function loadUser() {
+  const data = await AsyncStorage.getItem("user");
+
+  if (data) {
+    try {
+      const parsed = JSON.parse(data);
+
+      currentUser = {
+        id: parsed.id || "",
+        name: parsed.name || "",
+        phone: parsed.phone || "",
+        email: parsed.email || "",
+        password: parsed.password || "",
+        role: parsed.role || "",
+      };
+
+      console.log("LOADED USER:", currentUser);
+
+      return true;
+    } catch (error) {
+      console.log("LOAD USER PARSE ERROR:", error);
+      return false;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Create a Customer account using Supabase Auth.
+ */
+export async function registerCustomer(
+  name: string,
+  phone: string,
+  email: string,
+  password: string
+) {
+  const cleanName = name.trim();
+  const cleanPhone = phone.trim();
+  const cleanEmail = email.trim().toLowerCase();
+
+  const { data, error } = await supabase.auth.signUp({
+    email: cleanEmail,
+    password,
+    options: {
+      data: {
+        name: cleanName,
+        phone: cleanPhone,
+        role: "Customer",
+      },
+    },
+  });
+
+  if (error) {
+    console.log("SUPABASE REGISTER ERROR:", error);
+    throw error;
+  }
+
+  if (!data.user) {
+    throw new Error(
+      "Supabase account could not be created."
+    );
+  }
+
+  await saveUser(
+    cleanName,
+    cleanPhone,
+    cleanEmail,
+    "",
+    "Customer",
+    data.user.id
+  );
+
+  console.log(
+    "SUPABASE CUSTOMER CREATED:",
+    data.user.id
+  );
+
+  return {
+    user: data.user,
+    session: data.session,
+  };
+}
+
+/**
+ * Login using Supabase Auth.
+ */
+export async function loginCustomer(
+  email: string,
+  password: string
+) {
+  const loginEmail = email.trim().toLowerCase();
+
+  const { data, error } =
+    await supabase.auth.signInWithPassword({
+      email: loginEmail,
+      password,
+    });
+
+  if (error) {
+    console.log("SUPABASE LOGIN ERROR:", error);
+    throw error;
+  }
+
+  if (!data.user) {
+    throw new Error(
+      "Login failed. User account was not found."
+    );
+  }
+
+  const metadata = data.user.user_metadata || {};
+
+  const name =
+    typeof metadata.name === "string"
+      ? metadata.name
+      : currentUser.name || "Customer";
+
+  const phone =
+    typeof metadata.phone === "string"
+      ? metadata.phone
+      : currentUser.phone || "";
+
+  const role =
+    typeof metadata.role === "string"
+      ? metadata.role
+      : "Customer";
+
+  if (role !== "Customer") {
+    await supabase.auth.signOut();
+
+    throw new Error(
+      "This account is not a Customer account."
+    );
+  }
+
+  await saveUser(
+    name,
+    phone,
+    data.user.email || loginEmail,
+    "",
+    "Customer",
+    data.user.id
+  );
+
+  console.log(
+    "SUPABASE CUSTOMER LOGIN SUCCESS:",
+    data.user.id
+  );
+
+  return data.user;
+}
+
+/**
+ * Keep the existing function name available for old files.
+ *
+ * This now checks Supabase Auth instead of comparing a locally
+ * stored password.
+ */
+export async function checkLogin(
+  email: string,
+  password: string
+) {
+  try {
+    await loginCustomer(email, password);
+    return true;
+  } catch (error) {
+    console.log("CHECK LOGIN ERROR:", error);
+    return false;
+  }
+}
+
+/**
+ * Restore the current Supabase session when the app starts.
+ *
+ * If a valid session exists, customer information is copied into
+ * currentUser so existing GoRide screens continue working.
+ */
+export async function restoreSupabaseUser() {
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
+
+  if (error) {
+    console.log(
+      "SUPABASE SESSION ERROR:",
+      error
+    );
+    return false;
+  }
+
+  if (!session?.user) {
+    return false;
+  }
+
+  const user = session.user;
+  const metadata = user.user_metadata || {};
+
+  const name =
+    typeof metadata.name === "string"
+      ? metadata.name
+      : "";
+
+  const phone =
+    typeof metadata.phone === "string"
+      ? metadata.phone
+      : "";
+
+  const role =
+    typeof metadata.role === "string"
+      ? metadata.role
+      : "Customer";
+
+  if (role !== "Customer") {
+    return false;
+  }
+
+  await saveUser(
+    name,
+    phone,
+    user.email || "",
+    "",
+    "Customer",
+    user.id
+  );
+
+  return true;
+}
+
+/**
+ * Logout from Supabase and clear the local customer session.
+ *
+ * The separate "profile" storage is intentionally preserved
+ * until the existing logout flow removes it.
+ */
+export async function logoutUser() {
+  const { error } =
+    await supabase.auth.signOut();
+
+  if (error) {
+    console.log(
+      "SUPABASE LOGOUT ERROR:",
+      error
+    );
+    throw error;
+  }
+
+  currentUser = {
+    id: "",
+    name: "",
+    phone: "",
+    email: "",
+    password: "",
+    role: "",
+  };
+
+  await AsyncStorage.removeItem("user");
+
+  console.log("CUSTOMER LOGGED OUT");
+}

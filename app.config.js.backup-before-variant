@@ -1,0 +1,70 @@
+const variant = process.env.APP_VARIANT || "customer";
+
+const isDriver = variant === "driver";
+
+module.exports = {
+  name: isDriver ? "GoRide Driver" : "GoRide",
+  slug: "RideAppNew",
+  version: "1.0.0",
+  orientation: "portrait",
+  icon: "./assets/images/icon.png",
+  scheme: "rideappnew",
+
+  userInterfaceStyle: "automatic",
+
+  ios: {
+    bundleIdentifier: "com.pranabbori.RideAppNew",
+    googleServicesFile: "./GoogleService-Info.plist",
+  },
+
+  android: {
+    package: isDriver
+      ? "com.pranabbori.goride.driver"
+      : "com.pranabbori.goride.customer",
+
+googleServicesFile: process.env.GOOGLE_SERVICES_JSON || "./android/app/google-services.json",
+    adaptiveIcon: {
+      backgroundColor: "#FFD400",
+      foregroundImage: "./assets/images/android-icon-foreground.png",
+    },
+
+    permissions: [
+      "ACCESS_COARSE_LOCATION",
+      "ACCESS_FINE_LOCATION",
+    ],
+  },
+
+  web: {
+    output: "static",
+    favicon: "./assets/images/favicon.png",
+  },
+
+  plugins: [
+    "expo-router",
+
+    [
+      "expo-splash-screen",
+      {
+        backgroundColor: "#208AEF",
+        image: "./assets/images/splash-icon.png",
+        imageWidth: 76,
+      },
+    ],
+
+    "@react-native-firebase/app",
+    "@react-native-firebase/auth",
+  ],
+
+  experiments: {
+    typedRoutes: true,
+  },
+
+  extra: {
+    router: {},
+    eas: {
+      projectId: "87e3dc7a-5e0f-4a21-8cad-d211d69b5925",
+    },
+  },
+
+  jsEngine: "hermes",
+};

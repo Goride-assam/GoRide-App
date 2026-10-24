@@ -1,0 +1,430 @@
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+  Unsubscribe,
+} from "firebase/firestore";
+
+import { db } from "../config/firebase";
+import { currentRide } from "./rideData";
+
+export let rideRequest: any = null;
+
+let unsubscribeRequest: Unsubscribe | null = null;
+
+export const NEW_RIDE = "New Ride Request";
+export const ACCEPTED = "Driver Accepted 🚗";
+export const STARTED = "Ride Started 🛺";
+export const COMPLETED = "Ride Completed ✅";
+
+const ACTIVE_STATUSES = [
+  NEW_RIDE,
+  ACCEPTED,
+  STARTED,
+];
+
+function firestoreRequest(item: any) {
+  return {
+    ...item.data(),
+    id: item.id,
+  };
+}
+
+export async function createRequest(ride: any) {
+  const requestData = {
+    ...ride,
+    requestStatus: NEW_RIDE,
+    createdAt: Date.now(),
+  };
+
+  console.log(
+    "========== CREATE REQUEST =========="
+  );
+
+  console.log(
+    "REQUEST DATA:",
+    requestData
+  );
+
+  const ref = await addDoc(
+    collection(db, "rideRequests"),
+    requestData
+  );
+
+  rideRequest = {
+    ...requestData,
+    id: ref.id,
+  };
+
+  console.log(
+    "🔥 FIREBASE DOCUMENT ID:",
+    ref.id
+  );
+
+  console.log(
+    "🔥 REQUEST CREATED:",
+    rideRequest
+  );
+
+  return rideRequest;
+}
+
+export async function getRequest() {
+  try {
+    const requestsQuery = query(
+      collection(db, "rideRequests"),
+      orderBy("createdAt", "desc"),
+      limit(20)
+    );
+
+    const snapshot = await getDocs(
+      requestsQuery
+    );
+
+    if (snapshot.empty) {
+      rideRequest = null;
+      return null;
+    }
+
+    /*
+     * Prefer the exact current customer ride.
+     */
+    if (currentRide.firebaseId) {
+      const currentRequest =
+        snapshot.docs.find(
+          (item) =>
+            item.id === currentRide.firebaseId
+        );
+
+      if (currentRequest) {
+        const request =
+          firestoreRequest(currentRequest);
+
+        const status = String(
+          request.requestStatus || ""
+        ).trim();
+
+        if (
+          ACTIVE_STATUSES.includes(status) ||
+          status === COMPLETED
+        ) {
+          rideRequest = request;
+
+          console.log(
+            "🔥 CURRENT RIDE REQUEST:",
+            rideRequest
+          );
+
+          return rideRequest;
+        }
+      }
+    }
+
+    /*
+     * Fallback for older rides that may not
+     * have firebaseId saved correctly.
+     */
+    const requests = snapshot.docs
+      .map((item) =>
+        firestoreRequest(item)
+      )
+      .sort(
+        (a: any, b: any) =>
+          Number(b.createdAt || 0) -
+          Number(a.createdAt || 0)
+      );
+
+    const activeRequest =
+      requests.find(
+        (item: any) => {
+          const status = String(
+            item.requestStatus || ""
+          ).trim();
+
+          return ACTIVE_STATUSES.includes(
+            status
+          );
+        }
+      );
+
+    if (!activeRequest) {
+      rideRequest = null;
+      return null;
+    }
+
+    rideRequest = activeRequest;
+
+    console.log(
+      "🔥 ACTIVE REQUEST:",
+      rideRequest
+    );
+
+    return rideRequest;
+  } catch (error) {
+    console.log(
+      "GET REQUEST ERROR:",
+      error
+    );
+
+    return null;
+  }
+}
+
+export async function updateRequestStatus(
+  status: string
+) {
+  if (!rideRequest?.id) {
+    console.log(
+      "NO CURRENT REQUEST ID"
+    );
+    return;
+  }
+
+  await updateDoc(
+    doc(
+      db,
+      "rideRequests",
+      rideRequest.id
+    ),
+    {
+      requestStatus: status,
+      updatedAt: Date.now(),
+    }
+  );
+
+  rideRequest = {
+    ...rideRequest,
+    requestStatus: status,
+  };
+
+  console.log(
+    "🔥 REQUEST STATUS UPDATED:",
+    status
+  );
+}
+
+/*
+ * Listen to the customer's exact current ride.
+ *
+ * If currentRide.firebaseId exists, only that
+ * Firebase document is followed.
+ */
+export function listenToCurrentRideRequest(
+  callback: (
+    request: any | null
+  ) => void
+) {
+  stopRequestListener();
+
+  const firebaseId =
+    currentRide.firebaseId;
+
+  if (!firebaseId) {
+    console.log(
+      "⚠️ NO CURRENT FIREBASE RIDE ID"
+    );
+
+    rideRequest = null;
+    callback(null);
+
+    return () => {
+      stopRequestListener();
+    };
+  }
+
+  const rideRef = doc(
+    db,
+    "rideRequests",
+    firebaseId
+  );
+
+  unsubscribeRequest = onSnapshot(
+    rideRef,
+    (snapshot) => {
+      if (!snapshot.exists()) {
+        console.log(
+          "ℹ️ CURRENT RIDE DOCUMENT NOT FOUND"
+        );
+
+        rideRequest = null;
+        callback(null);
+        return;
+      }
+
+      const request =
+        firestoreRequest(snapshot);
+
+      const status = String(
+        request.requestStatus || ""
+      ).trim();
+
+      /*
+       * Keep the current ride visible while it
+       * is active or completed.
+       */
+      if (
+        !ACTIVE_STATUSES.includes(status) &&
+        status !== COMPLETED
+      ) {
+        rideRequest = null;
+        callback(null);
+        return;
+      }
+
+      rideRequest = request;
+
+      console.log(
+        "🔥 CURRENT RIDE REALTIME UPDATE:",
+        request
+      );
+
+      callback(request);
+    },
+    (error) => {
+      console.log(
+        "REALTIME CURRENT RIDE ERROR:",
+        error
+      );
+
+      rideRequest = null;
+      callback(null);
+    }
+  );
+
+  return () => {
+    stopRequestListener();
+  };
+}
+
+/*
+ * Existing latest-request listener kept for
+ * backward compatibility with other screens.
+ */
+export function listenToLatestRequest(
+  callback: (
+    request: any | null
+  ) => void
+) {
+  if (unsubscribeRequest) {
+    unsubscribeRequest();
+    unsubscribeRequest = null;
+  }
+
+  const requestsQuery = query(
+    collection(db, "rideRequests"),
+    orderBy("createdAt", "desc"),
+    limit(20)
+  );
+
+  unsubscribeRequest = onSnapshot(
+    requestsQuery,
+    (snapshot) => {
+      console.log(
+        "🔥 FIREBASE REQUEST COUNT:",
+        snapshot.size
+      );
+
+      const requests = snapshot.docs
+        .map((item) =>
+          firestoreRequest(item)
+        )
+        .sort(
+          (a: any, b: any) =>
+            Number(b.createdAt || 0) -
+            Number(a.createdAt || 0)
+        );
+
+      /*
+       * First preference:
+       * exact current customer's ride.
+       */
+      let activeRequest: any = null;
+
+      if (currentRide.firebaseId) {
+        activeRequest =
+          requests.find(
+            (item: any) =>
+              item.id ===
+              currentRide.firebaseId
+          ) || null;
+      }
+
+      /*
+       * Backward-compatible fallback.
+       */
+      if (!activeRequest) {
+        activeRequest =
+          requests.find(
+            (item: any) => {
+              const status = String(
+                item.requestStatus || ""
+              ).trim();
+
+              return ACTIVE_STATUSES.includes(
+                status
+              );
+            }
+          ) || null;
+      }
+
+      if (!activeRequest) {
+        rideRequest = null;
+
+        console.log(
+          "ℹ️ NO CURRENT ACTIVE REQUEST"
+        );
+
+        callback(null);
+        return;
+      }
+
+      const status = String(
+        activeRequest.requestStatus || ""
+      ).trim();
+
+      if (
+        !ACTIVE_STATUSES.includes(status) &&
+        status !== COMPLETED
+      ) {
+        rideRequest = null;
+        callback(null);
+        return;
+      }
+
+      rideRequest = activeRequest;
+
+      console.log(
+        "🔥 CURRENT/ACTIVE REQUEST:",
+        activeRequest
+      );
+
+      callback(activeRequest);
+    },
+    (error) => {
+      console.log(
+        "REALTIME REQUEST ERROR:",
+        error
+      );
+
+      rideRequest = null;
+      callback(null);
+    }
+  );
+
+  return () => {
+    stopRequestListener();
+  };
+}
+
+export function stopRequestListener() {
+  if (unsubscribeRequest) {
+    unsubscribeRequest();
+    unsubscribeRequest = null;
+  }
+}

@@ -1,0 +1,71 @@
+const variant = process.env.APP_VARIANT || "customer";
+
+const isDriver = variant === "driver";
+
+module.exports = {
+  name: isDriver ? "GoRide Driver" : "GoRide",
+  slug: "RideAppNew",
+  version: "1.0.0",
+  orientation: "portrait",
+  icon: "./assets/images/icon.png",
+  scheme: "rideappnew",
+
+
+  ios: {
+    bundleIdentifier: "com.pranabbori.RideAppNew",
+    config: { googleMaps: { apiKey: "AIzaSyDcR1O50m3KOGbi1IUrB7bMJRJI6XLBLRU" } },
+    googleServicesFile: "./GoogleService-Info.plist",
+  },
+
+  android: {
+    package: isDriver
+      ? "com.pranabbori.goride.driver"
+      : "com.pranabbori.goride.customer",
+    config: { googleMaps: { apiKey: "AIzaSyDcR1O50m3KOGbi1IUrB7bMJRJI6XLBLRU" } },
+    googleServicesFile:
+      process.env.GOOGLE_SERVICES_JSON ||
+      "./android/app/google-services.json",
+    adaptiveIcon: {
+      backgroundColor: "#FFD400",
+      foregroundImage: "./assets/images/android-icon-foreground.png",
+    },
+    permissions: [
+      "ACCESS_COARSE_LOCATION",
+      "ACCESS_FINE_LOCATION",
+    ],
+  },
+
+  web: {
+    output: "static",
+    favicon: "./assets/images/favicon.png",
+  },
+
+  plugins: [
+    "expo-localization",
+    "expo-router",
+    [
+      "expo-splash-screen",
+      {
+        backgroundColor: "#208AEF",
+        image: "./assets/images/splash-icon.png",
+        imageWidth: 76,
+      },
+    ],
+    "@react-native-firebase/app",
+    "@react-native-firebase/auth",
+  ],
+
+  experiments: {
+    typedRoutes: true,
+  },
+
+  extra: {
+    appVariant: variant,
+    router: {},
+    eas: {
+      projectId: "87e3dc7a-5e0f-4a21-8cad-d211d69b5925",
+    },
+  },
+
+  jsEngine: "hermes",
+};

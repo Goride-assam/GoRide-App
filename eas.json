@@ -1,0 +1,26 @@
+{
+  "cli": {
+    "version": ">= 21.4.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "customer": {
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "customer"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "driver": {
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "driver"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}

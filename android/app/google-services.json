@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "812226792770",
+    "project_id": "rideapp-385d0",
+    "storage_bucket": "rideapp-385d0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:812226792770:android:a6c91355b278f81df88cdb",
+        "android_client_info": {
+          "package_name": "com.pranabbori.RideAppNew"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcR1O50m3KOGbi1IUrB7bMJRJI6XLBLRU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

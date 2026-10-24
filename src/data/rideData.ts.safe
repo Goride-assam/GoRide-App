@@ -1,0 +1,89 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export let currentRide = {
+  id: '',
+  pickup: '',
+  drop: '',
+  fare: 0,
+  status: 'No Ride',
+  userName: '',
+
+  // Driver information
+  driverName: '',
+  driverPhone: '',
+  driverVehicle: '',
+  driverVehicleNo: '',
+  driverRating: '',
+};
+
+export async function createRide(
+  pickup: string,
+  drop: string,
+  userName: string,
+  fare: number
+) {
+  currentRide = {
+    id: 'RIDE' + Date.now(),
+    pickup,
+    drop,
+    fare,
+    status: 'Searching Driver 🔎',
+    userName,
+
+    driverName: '',
+    driverPhone: '',
+    driverVehicle: '',
+    driverVehicleNo: '',
+    driverRating: '',
+  };
+
+  await AsyncStorage.setItem(
+    'currentRide',
+    JSON.stringify(currentRide)
+  );
+
+  return currentRide;
+}
+
+export async function loadRide() {
+  const data = await AsyncStorage.getItem(
+    'currentRide'
+  );
+
+  if (data) {
+    currentRide = JSON.parse(data);
+    return true;
+  }
+
+  return false;
+}
+
+export async function updateRideStatus(
+  newStatus: string
+) {
+  currentRide.status = newStatus;
+
+  await AsyncStorage.setItem(
+    'currentRide',
+    JSON.stringify(currentRide)
+  );
+}
+
+export async function assignDriver(
+  name: string,
+  phone: string,
+  vehicle: string,
+  vehicleNo: string,
+  rating: string
+) {
+  currentRide.driverName = name;
+  currentRide.driverPhone = phone;
+  currentRide.driverVehicle = vehicle;
+  currentRide.driverVehicleNo = vehicleNo;
+  currentRide.driverRating = rating;
+
+  await AsyncStorage.setItem(
+    'currentRide',
+    JSON.stringify(currentRide)
+  );
+}

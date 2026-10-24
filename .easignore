@@ -1,0 +1,9 @@
+node_modules/
+android/
+ios/
+decoded/
+decoded_v5/
+*.apk
+*.aab
+.gradle/
+.expo/

@@ -1,0 +1,43 @@
+{
+  "id": "fde41c27-67df-4916-8fec-b1d39c540859",
+  "status": "ERRORED",
+  "platform": "ANDROID",
+  "error": {
+    "errorCode": "EAS_BUILD_UNKNOWN_GRADLE_ERROR",
+    "message": "Gradle build failed with unknown error. See logs for the \"Run gradlew\" phase for more information."
+  },
+  "artifacts": {},
+  "initiatingActor": {
+    "id": "c13392b5-923b-4c8e-9cde-f618784ce79e",
+    "displayName": "pranabbori"
+  },
+  "logFiles": [
+    "https://storage.googleapis.com/eas-workflows-production/logs/87e3dc7a-5e0f-4a21-8cad-d211d69b5925/fde41c27-67df-4916-8fec-b1d39c540859/2026-09-02T17%3A31%3A50Z-f0662cc3-0d4d-4c47-99fb-a3997a92295d.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260903%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260903T001841Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=82c3292759859acf44db6b8834b9e329d975f0eac62cefb107484e157cfe17fcb5ee3f6d54b95ef8e03bf0f8baf5ceaf85d0e6c3fa4f5b0f282932ffd334948cd06abcfc078403d6ebf4cc952c1e27229199958186a0ab6c803c8b0e3d767833fc8411d3b764ea5c02306ea117004addbf38177949efd7d0c37cc2f55fc028b2eeaa3b6f829a4ce7d2a6fb9502cd70af9a33170a25e1294d82de7acea23ed2c03bbc28c25bfbcc1669c24d5c89c5358dbbabfd40e8b0894d1dda854ba9addcf33ebc8a22c78241b58bd1d1f6af7b1e87af7e98208c003f53ea1e9c7d64137a0c32d2f13dc07730116d09e1e1fa3a0dcfe308fc558b6869ee3dae1fbada5f45d1"
+  ],
+  "app": {
+    "id": "87e3dc7a-5e0f-4a21-8cad-d211d69b5925",
+    "name": "RideAppNew",
+    "slug": "RideAppNew",
+    "ownerAccount": {
+      "id": "7b1cb8cf-9fbe-4694-83c9-d93dd57836bb",
+      "name": "pranabbori"
+    }
+  },
+  "distribution": "INTERNAL",
+  "buildProfile": "preview",
+  "appIdentifier": "com.pranabbori.RideAppNew",
+  "sdkVersion": "54.0.0",
+  "appVersion": "1.0.0",
+  "appBuildVersion": "1",
+  "priority": "NORMAL",
+  "createdAt": "2026-09-02T16:23:25.041Z",
+  "updatedAt": "2026-09-02T17:44:31.669Z",
+  "completedAt": "2026-09-02T17:44:31.479Z",
+  "expirationDate": "2026-09-16T16:23:25.097Z",
+  "isForIosSimulator": false,
+  "metrics": {
+    "buildWaitTime": 2161,
+    "buildQueueTime": 4107633,
+    "buildDuration": 756644
+  }
+}
