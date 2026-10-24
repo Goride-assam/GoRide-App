@@ -29,7 +29,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Android APK (Local)
+      - name: Clean Gradle Cache before build
+        run: rm -rf android/.gradle
+
+      - name: Build Android APK
         run: |
           cd android
           chmod +x gradlew
